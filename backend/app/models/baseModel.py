@@ -1,8 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
+from app.ext import db
 
-db = SQLAlchemy()
-
-class BaseModelMixin:
+class BaseModel:
   def save(self):
     db.session.add(self)
     db.session.commit()
