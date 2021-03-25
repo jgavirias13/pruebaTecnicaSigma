@@ -1,11 +1,31 @@
 from flask_restful import Resource
 from app.schema.productSchema import ProductSchema
 from app.models.product import Product
+import requests
 
 productSchema = ProductSchema()
 
+def validateProductEquals(product1, product2):
+  if(product1.name == product2.name and product1.image == product2.image
+    and product1.price == product2.price and product1.tax == product2.tax):
+    return True
+  return False
+
 class ProductResource(Resource):
   def get(self):
-    product = Product(1, 'Libros', 'https://images-na.ssl-images-amazon.com/images/I/61Uxg-SWExL._SL1500_.jpg', 10, 1)
-    response = productSchema.dump(product)
-    return response
+    apiResponse = requests.get('http://sigmatest.sigmastorage.online/')
+    productDic = productSchema.load(apiResponse.json())
+    inquiredProduct = Product(productDic['id'], productDic['name'],
+      productDic['image'], productDic['price'], productDic['tax'])
+    oldProduct = Product.get_by_id(inquiredProduct.id)
+    if(oldProduct):
+      if(not validateProductEquals(inquiredProduct, oldProduct)):
+        oldProduct.name = inquiredProduct.name
+        oldProduct.image = inquiredProduct.image
+        oldProduct.price = inquiredProduct.price
+        oldProduct.tax = inquiredProduct.tax
+        oldProduct.update()
+    else:
+      inquiredProduct.save()
+
+    return productSchema.dump(inquiredProduct)
