@@ -1,6 +1,8 @@
 from flask_restful import Resource
 from app.schema.productSchema import ProductSchema
 from app.models.product import Product
+from app.models.productResponse import ProductResponse
+from app.common.util import calculateDiscount, calculateTax
 import requests
 
 productSchema = ProductSchema()
@@ -27,5 +29,9 @@ class ProductResource(Resource):
         oldProduct.update()
     else:
       inquiredProduct.save()
-
-    return productSchema.dump(inquiredProduct)
+    
+    productResponse = ProductResponse(inquiredProduct.id, inquiredProduct.name,
+      inquiredProduct.image, inquiredProduct.price, inquiredProduct.tax)
+    productResponse.tax = calculateTax(inquiredProduct)
+    productResponse.discount = calculateDiscount(inquiredProduct)
+    return productSchema.dump(productResponse)

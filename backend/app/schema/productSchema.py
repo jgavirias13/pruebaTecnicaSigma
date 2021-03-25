@@ -7,3 +7,4 @@ class ProductSchema(ma.Schema):
   image = fields.String()
   price = fields.Float()
   tax = fields.Float()
+  discount = fields.Float(dump_only = True)
